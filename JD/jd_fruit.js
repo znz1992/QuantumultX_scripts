@@ -107,6 +107,11 @@ if (!shareCodes1) {
         '1aefdabb6ed84eb0bb90915239d2d48a'
     ]
 }else{
+    if (!shareCodes1) { shareCodes1='1aefdabb6ed84eb0bb90915239d2d48a'}
+    if (!shareCodes2) { shareCodes2='1aefdabb6ed84eb0bb90915239d2d48a'}
+    if (!shareCodes3) { shareCodes3='1aefdabb6ed84eb0bb90915239d2d48a'}
+    if (!shareCodes4) { shareCodes4='1aefdabb6ed84eb0bb90915239d2d48a'}
+    if (!shareCodes5) { shareCodes5='1aefdabb6ed84eb0bb90915239d2d48a'}
     var shareCodes = [ // 这个列表填入你要助力的好友的shareCode
         shareCodes1,
         shareCodes2,
