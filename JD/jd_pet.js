@@ -102,11 +102,6 @@ if (!shareCodes1) {
         'MTAxODc2NTEzNDAwMDAwMDAyNzU0NzIwMQ=='
     ]
 }else{
-    if (!shareCodes1) { shareCodes1='MTAxODc2NTEzNDAwMDAwMDAyNzU0NzIwMQ=='}
-    if (!shareCodes2) { shareCodes2='MTAxODc2NTEzNDAwMDAwMDAyNzU0NzIwMQ=='}
-    if (!shareCodes3) { shareCodes3='MTAxODc2NTEzNDAwMDAwMDAyNzU0NzIwMQ=='}
-    if (!shareCodes4) { shareCodes4='MTAxODc2NTEzNDAwMDAwMDAyNzU0NzIwMQ=='}
-    if (!shareCodes5) { shareCodes5='MTAxODc2NTEzNDAwMDAwMDAyNzU0NzIwMQ=='}
     var shareCodes = [ // 这个列表填入你要助力的好友的shareCode
         shareCodes1,
         shareCodes2,
@@ -300,6 +295,7 @@ async function slaveHelp() {
     let functionId = arguments.callee.name.toString();
     let helpPeoples = '';
     for (let code of shareCodes) {
+        if (code=="") { continue }
         console.log(`开始助力好友: ${code}`);
         let response = await request(functionId, {
             shareCode: code

@@ -110,11 +110,6 @@ if (!shareCodes1) {
         'cay7n2fgqgn7sq2bzog7a3ovlq'
     ]
 }else{
-    if (!shareCodes1) { shareCodes1='cay7n2fgqgn7sq2bzog7a3ovlq'}
-    if (!shareCodes2) { shareCodes2='cay7n2fgqgn7sq2bzog7a3ovlq'}
-    if (!shareCodes3) { shareCodes3='cay7n2fgqgn7sq2bzog7a3ovlq'}
-    if (!shareCodes4) { shareCodes4='cay7n2fgqgn7sq2bzog7a3ovlq'}
-    if (!shareCodes5) { shareCodes5='cay7n2fgqgn7sq2bzog7a3ovlq'}
     var plantUuids = [ // 这个列表填入你要助力的好友的shareCode
         shareCodes1,
         shareCodes2,
@@ -266,7 +261,7 @@ function* step() {
         //助力好友
         console.log('开始助力好友')
         for (let plantUuid of plantUuids) {
-            if (plantUuid == myPlantUuid) {
+            if (plantUuid == myPlantUuid || code=="") {
                 console.log('跳过自己的plantUuid')
                 continue
             }

@@ -107,11 +107,6 @@ if (!shareCodes1) {
         '1aefdabb6ed84eb0bb90915239d2d48a'
     ]
 }else{
-    if (!shareCodes1) { shareCodes1='1aefdabb6ed84eb0bb90915239d2d48a'}
-    if (!shareCodes2) { shareCodes2='1aefdabb6ed84eb0bb90915239d2d48a'}
-    if (!shareCodes3) { shareCodes3='1aefdabb6ed84eb0bb90915239d2d48a'}
-    if (!shareCodes4) { shareCodes4='1aefdabb6ed84eb0bb90915239d2d48a'}
-    if (!shareCodes5) { shareCodes5='1aefdabb6ed84eb0bb90915239d2d48a'}
     var shareCodes = [ // 这个列表填入你要助力的好友的shareCode
         shareCodes1,
         shareCodes2,
@@ -235,7 +230,7 @@ function* step() {
         let remainTimes = null;//今日剩余助力次数
         let helpSuccessPeoples = '';//成功助力好友
         for (let code of shareCodes) {
-            if (code == farmInfo.farmUserPro.shareCode) {
+            if (code == farmInfo.farmUserPro.shareCode || code=="") {
                 console.log('跳过自己的shareCode')
                 continue
             }
