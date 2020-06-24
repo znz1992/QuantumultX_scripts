@@ -261,7 +261,7 @@ function* step() {
         //助力好友
         console.log('开始助力好友')
         for (let plantUuid of plantUuids) {
-            if (plantUuid == myPlantUuid || code=="") {
+            if (plantUuid == myPlantUuid || plantUuid=="") {
                 console.log('跳过自己的plantUuid')
                 continue
             }
