@@ -134,6 +134,7 @@ function* step() {
         }
         let shareUrl = plantBeanIndexResult.data.jwordShareInfo.shareUrl
         let myPlantUuid = getParam(shareUrl, 'plantUuid')
+        $hammer.write(myPlantUuid,'jd_plantBean0')
         console.log(`你的plantUuid为${myPlantUuid}`)
         for (let task of plantBeanIndexResult.data.taskList) {
             console.log(`开始【${task.taskName}】任务`)

@@ -396,6 +396,7 @@ function initPetTown() {
             petInfo = response.result;
             goodsUrl = response.result.goodsInfo.goodsUrl;
             console.log(`初始化萌宠信息完成: ${JSON.stringify(petInfo)}`);
+            $hammer.write(petInfo.shareCode,'jd_pet0')
             console.log(`您的shareCode为: ${petInfo.shareCode}`);
           gen.next();
         } else {

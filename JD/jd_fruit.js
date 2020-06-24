@@ -100,7 +100,6 @@ const shareCodes1=$hammer.read('jd_fruit1')
 const shareCodes2=$hammer.read('jd_fruit2')
 const shareCodes3=$hammer.read('jd_fruit3')
 const shareCodes4=$hammer.read('jd_fruit4')
-const shareCodes5=$hammer.read('jd_fruit5')
 if (!shareCodes1) {
     $hammer.alert(name, '请填写互助码');
     var shareCodes = [ // 这个列表填入你要助力的好友的shareCode
@@ -111,8 +110,7 @@ if (!shareCodes1) {
         shareCodes1,
         shareCodes2,
         shareCodes3,
-        shareCodes4,
-        shareCodes5
+        shareCodes4
     ]
 }
 var Task = step();
@@ -134,6 +132,7 @@ function* step() {
     if (farmInfo.farmUserPro) {
       subTitle = farmInfo.farmUserPro.nickName + '的' + farmInfo.farmUserPro.name;
         console.log('shareCode为: ' + farmInfo.farmUserPro.shareCode);
+        $hammer.write(farmInfo.farmUserPro.shareCode,'jd_fruit0')
         farmTask = yield taskInitForFarm();
         // console.log(`当前任务详情: ${JSON.stringify(farmTask)}`);
         console.log(`开始签到`);
