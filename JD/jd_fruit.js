@@ -137,7 +137,7 @@ function* step() {
     let farmInfo = yield initForFarm();
     if (farmInfo.farmUserPro) {
       subTitle = farmInfo.farmUserPro.nickName + '的' + farmInfo.farmUserPro.name;
-      $hammer.write(farmInfo.farmUserPro.shareCode,'jd_fruit0')
+      $hammer.write(name+':'+farmInfo.farmUserPro.shareCode,'jd_fruit0')
         console.log('shareCode为: ' + farmInfo.farmUserPro.shareCode);
         farmTask = yield taskInitForFarm();
         // console.log(`当前任务详情: ${JSON.stringify(farmTask)}`);
