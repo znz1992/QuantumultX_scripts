@@ -101,22 +101,31 @@ const name = $hammer.read('jd_plantBean_name')
 //京东接口地址
 const JD_API_HOST = 'https://api.m.jd.com/client.action';
 
-const shareCodes1=$hammer.read('jd_plantBean1')
-const shareCodes2=$hammer.read('jd_plantBean2')
-const shareCodes3=$hammer.read('jd_plantBean3')
-if (!shareCodes1) {
-    $hammer.alert(name, '请填写互助码');
-    var plantUuids = [ // 这个列表填入你要助力的好友的shareCode
-        'cay7n2fgqgn7sq2bzog7a3ovlq'
-    ]
-}else{
-    var plantUuids = [ // 这个列表填入你要助力的好友的shareCode
-        shareCodes1,
-        shareCodes2,
-        shareCodes3
-    ]
+var plantUuids = [ // 这个列表填入你要助力的好友的plantUuid
+    'cay7n2fgqgn7sq2bzog7a3ovlq'
+]
+let currentRoundId = null;//本期活动id
+let lastRoundId = null;//上期id
+let roundList = [];
+let awardState = '';//上期活动的京豆是否收取
+// 添加box功能
+// 【用box订阅的好处】
+// 1️⃣脚本也可以远程挂载了。助力功能只需在box里面设置助力码。
+// 2️⃣所有脚本的cookie都可以备份，方便你迁移到其他支持box的软件。
+let isBox = false //默认没有使用box
+const boxShareCodeArr = ['jd_plantBean1', 'jd_plantBean2', 'jd_plantBean3'];
+isBox = boxShareCodeArr.some((item) => {
+  const boxShareCode = $hammer.read(item);
+  return (boxShareCode !== undefined && boxShareCode !== null && boxShareCode !== '');
+});
+if (isBox) {
+  plantUuids = [];
+  for (const item of boxShareCodeArr) {
+    if ($hammer.read(item)) {
+      plantUuids.push($hammer.read(item));
+    }
+  }
 }
-
 
 var Task = step();
 Task.next();
@@ -132,9 +141,13 @@ function* step() {
             //todo
             return
         }
+        roundList = plantBeanIndexResult.data.roundList;
+        currentRoundId = roundList[1].roundId;
+        lastRoundId = roundList[0].roundId;
+        awardState = roundList[0].awardState;
         let shareUrl = plantBeanIndexResult.data.jwordShareInfo.shareUrl
         let myPlantUuid = getParam(shareUrl, 'plantUuid')
-        $hammer.write(myPlantUuid,'jd_plantBean0')
+        $hammer.write(name+':'+myPlantUuid,'jd_fruit0')
         console.log(`你的plantUuid为${myPlantUuid}`)
         for (let task of plantBeanIndexResult.data.taskList) {
             console.log(`开始【${task.taskName}】任务`)
@@ -262,7 +275,7 @@ function* step() {
         //助力好友
         console.log('开始助力好友')
         for (let plantUuid of plantUuids) {
-            if (plantUuid == myPlantUuid || plantUuid=="") {
+            if (plantUuid == myPlantUuid) {
                 console.log('跳过自己的plantUuid')
                 continue
             }
@@ -299,11 +312,35 @@ function* step() {
         } else {
             console.log(`plantBeanIndexResult:${JSON.stringify(plantBeanIndexResult)}`)
         }
+        // 偷大于等于3瓶好友的营养液
+        let stealRes = yield steal();
+        if (stealRes.code == 0) {
+          if (stealRes.data.tips) {
+            console.log('今日已达上限');
+            return
+          }
+          if (stealRes.data && stealRes.data.friendInfoList && stealRes.data.friendInfoList.length > 0) {
+            for (let item of stealRes.data.friendInfoList) {
+              if (item.nutrCount >= 2) {
+                console.log(`可以偷的好友的信息::${JSON.stringify(item)}`);
+                console.log(`可以偷的好友的信息paradiseUuid::${JSON.stringify(item.paradiseUuid)}`);
+                let stealFriendRes = yield collectUserNutr(item.paradiseUuid);
+                console.log(`偷取好友营养液情况:${JSON.stringify(stealFriendRes)}`)
+                if (stealFriendRes.code == '0') {
+                  console.log(`偷取好友营养液成功`)
+                }
+              }
+            }
+          }
+        }
+        //收获
+        let res = yield getReward();
+        console.log(`种豆得豆收获的京豆情况---res,${JSON.stringify(res)}`);
         console.log('结束')
     } else {
         message = '请先获取cookie\n直接使用NobyDa的京东签到获取'
     }
-    $hammer.alert(name, message)
+    //$hammer.alert(name, message)
 }
 
 function purchaseRewardTask(roundId) {
@@ -419,6 +456,36 @@ function plantBeanIndex() {
     request(functionId, body);//plantBeanIndexBody
 }
 
+//偷营养液大于等于3瓶的好友
+//①查询好友列表
+function steal() {
+  const body = {
+    pageNum: '1'
+  }
+  request('plantFriendList', body);
+}
+//②执行偷好友营养液的动作
+function collectUserNutr(paradiseUuid) {
+  console.log('开始偷好友');
+  console.log(paradiseUuid);
+  let functionId = arguments.callee.name.toString();
+  const body = {
+    "paradiseUuid": paradiseUuid,
+    "roundId": currentRoundId
+  }
+  request(functionId, body);
+}
+//每轮种豆活动获取结束后,自动收取京豆
+function getReward() {
+  if (awardState === '5') {
+    const body = {
+      "roundId": lastRoundId
+    }
+    request('receivedBean', body);
+  } else if (awardState === '6') {
+    console.log("上轮活动您已领奖，去京豆明细页看看");
+  }
+}
 function requestGet(url){
     const option =  {
         url: url,
