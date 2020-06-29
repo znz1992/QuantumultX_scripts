@@ -94,7 +94,7 @@ const $hammer = (() => {
 })();
 
 //直接用NobyDa的jd cookie
-const cookie = $hammer.read('CookieJD_z')
+const cookie = $hammer.read('CookieJD_joy')
 const name = $hammer.read('jd_joy_name')
 
 var Task = step();
@@ -141,7 +141,7 @@ function* step() {
                     if (!market.status) {
                         let clickResult = yield click(market.marketLink)
                         console.log(`逛会场点击${market.marketName}结果${JSON.stringify(clickResult)}`)
-                        
+
                         let scanMarketResult = yield ScanMarket(market.marketLink)
                         console.log(`逛会场${market.marketName}结果${JSON.stringify(scanMarketResult)}`)
                     }
@@ -260,7 +260,7 @@ function enterRoom() {
 
 function request(url) {
     $hammer.log("request url:", url);
-    const option =  {
+    const option = {
         url: url,
         headers: {
             Cookie: cookie,
@@ -279,7 +279,7 @@ function requestPost(url, body, ContentType) {
         body: body,
         headers: {
             Cookie: cookie,
-        UserAgent: `Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1`,
+            UserAgent: `Mozilla/5.0 (iPhone; CPU iPhone OS 13_2_3 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/13.0.3 Mobile/15E148 Safari/604.1`,
             reqSource: 'h5',
             'Content-Type': ContentType,
         }
