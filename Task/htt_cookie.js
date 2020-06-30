@@ -3,6 +3,8 @@
 公众号iosrule by红鲤鱼与绿鲤鱼与驴
 2020.6.28
 增加小视频和视频奖励ck
+2020.6.30更新获取ck的bug
+点击签到获取ck
 
 ====================================
 获取ck完毕可以禁止该js
@@ -71,7 +73,7 @@ var tt=huitoutiao;
 
 
 console.log(urlval)
-if(urlval.indexOf("frontend/sign")>=0)
+if(urlval.indexOf("frontend/sign?")>=0)
 {
  
 var htt_signurlck=urlval.substring(urlval.indexOf("sign?")+5,urlval.length);
