@@ -377,7 +377,7 @@ function* step() {
     }
     const end = ((Date.now() - startTime) / 1000).toFixed(2);
     console.log(`\n完成${name}脚本耗时:  ${end} 秒\n`);
-    $hammer.alert(name, message, subTitle);
+    //$hammer.alert(name, message, subTitle);
 }
 
 function purchaseRewardTask(roundId) {
