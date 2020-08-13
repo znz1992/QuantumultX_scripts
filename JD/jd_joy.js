@@ -19,7 +19,7 @@ const $ = new Env(name2);
 const Key = '';//单引号内自行填写您抓取的京东Cookie
 //直接用NobyDa的jd cookie
 const cookie = Key ? Key : $.getdata('CookieJD_joy');
-const FEED_NUM = ($.getdata('joyFeedCount') * 1) || 10   //每次喂养数量 [10,20,40,80]
+const FEED_NUM = ($.getdata('joyFeedCount') * 1) || 80   //每次喂养数量 [10,20,40,80]
 let jdNotify = $.getdata('jdJoyNotify');
 let name = $.getdata('jd_joy_name');
 var Task = step();
