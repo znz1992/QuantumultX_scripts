@@ -1,13 +1,13 @@
 /*
 jd免费水果 搬的https://github.com/liuxiaoyucc/jd-helper/blob/a6f275d9785748014fc6cca821e58427162e9336/fruit/fruit.js
-更新时间:2020-07-30
+更新时间:2020-08-15
 // quantumultx
 [task_local]
 #jd免费水果
-5 6-18/6 * * * https://raw.githubusercontent.com/nzw9314/QuantumultX/master/Task/jd_fruit.js, tag=东东农场, img-url=https://raw.githubusercontent.com/znz1992/Gallery/master/jdsg.png, enabled=true
+5 6-18/6 * * * https://raw.githubusercontent.com/lxk0301/scripts/master/jd_fruit.js, tag=东东农场, img-url=https://raw.githubusercontent.com/znz1992/Gallery/master/jdsg.png, enabled=true
 // Loon
 [Script]
-cron "5 6-18/6 * * *" script-path=https://raw.githubusercontent.com/nzw9314/QuantumultX/master/Task/jd_fruit.js,tag=东东农场
+cron "5 6-18/6 * * *" script-path=https://raw.githubusercontent.com/lxk0301/scripts/master/jd_fruit.js,tag=东东农场
 兼容surge和Loon等软件功能 by@iepngs
 新增和维护功能 by@lxk0301
 互助码shareCode请先手动运行脚本查看打印可看到
@@ -17,16 +17,20 @@ cron "5 6-18/6 * * *" script-path=https://raw.githubusercontent.com/nzw9314/Quan
 
 let name2 = '东东农场';
 const $ = new Env(name2);
-const Key = '';//单引号内自行填写您抓取的京东Cookie
-//直接用NobyDa的jd cookie
-const cookie = Key ? Key : $.getdata('CookieJD_z');
+const retainWater = 50;//保留水滴大于多少g,默认50g;
+let name = $.getdata('jd_fruit_name_z');
+//Node.js用户请在jdCookie.js处填写京东ck;
+const jdCookieNode = $.isNode() ? require('./jdCookie.js') : '';
+
+//ios等软件用户直接用NobyDa的jd cookie
+const cookie = jdCookieNode.CookieJD ? jdCookieNode.CookieJD : $.getdata('CookieJD_fruit');
+
 //京东接口地址
 const JD_API_HOST = 'https://api.m.jd.com/client.action';
 
 let jdNotify = $.getdata('jdFruitNotify');
-let name = $.getdata('jd_fruit_name');
 //助力好友分享码(最多4个,否则后面的助力失败),原因:京东农场每人每天只有四次助力机会
-var shareCodes = [ // 这个列表填入你要助力的好友的shareCode
+let shareCodes = [ // 这个列表填入你要助力的好友的shareCode
     '1aefdabb6ed84eb0bb90915239d2d48a'
 ]
 // 添加box功能
@@ -34,7 +38,7 @@ var shareCodes = [ // 这个列表填入你要助力的好友的shareCode
 // 1️⃣脚本也可以远程挂载了。助力功能只需在box里面设置助力码。
 // 2️⃣所有脚本的cookie都可以备份，方便你迁移到其他支持box的软件。
 let isBox = false //默认没有使用box
-const boxShareCodeArr = ['jd_fruit1', 'jd_fruit2', 'jd_fruit3', 'jd_fruit4'];
+const boxShareCodeArr = ['jd_fruit1_z', 'jd_fruit2_z', 'jd_fruit3_z', 'jd_fruit4_z'];
 isBox = boxShareCodeArr.some((item) => {
     const boxShareCode = $.getdata(item);
     return (boxShareCode !== undefined && boxShareCode !== null && boxShareCode !== '');
@@ -69,7 +73,20 @@ function* step() {
         subTitle = `【${farmInfo.farmUserPro.nickName}】${farmInfo.farmUserPro.name}`;
         console.log(`\n【您的互助码shareCode】 ${farmInfo.farmUserPro.shareCode}\n`);
         console.log(`\n【已成功兑换水果】${farmInfo.farmUserPro.winTimes}次\n`)
-        if (farmInfo.treeState === 2) {
+        if (farmInfo.treeState === 0) {
+            //已下单购买, 但未开始种植新的水果
+            $.msg(name, `【提醒⏰】请重新种植水果`, `上轮水果${farmInfo.farmUserPro.name}已兑换成功\n请去京东APP或微信小程序选购并种植新的水果\n openApp.jdMobile://`, { "open-url": "openApp.jdMobile://" });
+            $.done();
+            return;
+        } else if (farmInfo.treeState === 1) {
+            console.log(`\n${farmInfo.farmUserPro.name}种植中...\n`)
+        } else if (farmInfo.treeState === 2) {
+            option['open-url'] = "openApp.jdMobile://";
+            $.msg(name, `【提醒⏰】${farmInfo.farmUserPro.name}已可领取`, '请去京东APP或微信小程序查看', option);
+            $.done();
+            return;
+        } else if (farmInfo.treeState === 3) {
+            //已成熟可去兑换,但还没去下单购买
             option['open-url'] = "openApp.jdMobile://";
             $.msg(name, `【提醒⏰】${farmInfo.farmUserPro.name}已可领取`, '请去京东APP或微信小程序查看', option);
             $.done();
@@ -332,7 +349,7 @@ function* step() {
                     salveHelpAddWater += helpResult.helpResult.salveHelpAddWater;
                     console.log(`【助力好友结果】: 已成功给【${helpResult.helpResult.masterUserInfo.nickName}】助力`);
                     console.log(`给好友【${helpResult.helpResult.masterUserInfo.nickName}】助力获得${helpResult.helpResult.salveHelpAddWater}g水滴`)
-                    helpSuccessPeoples += helpResult.helpResult.masterUserInfo.nickName + '，';
+                    helpSuccessPeoples += helpResult.helpResult.masterUserInfo.nickName || '匿名用户' + ',';
                 } else if (helpResult.helpResult.code === '8') {
                     console.log(`【助力好友结果】: 助力【${helpResult.helpResult.masterUserInfo.nickName}】失败，您今天助力次数已耗尽`);
                 } else if (helpResult.helpResult.code === '9') {
@@ -391,6 +408,21 @@ function* step() {
                 }
             } else {
                 console.log('4小时候免费赠送的抽奖机会已领取')
+            }
+            if (initForTurntableFarmRes.turntableBrowserAds && initForTurntableFarmRes.turntableBrowserAds.length > 0) {
+                console.log('开始浏览天天抽奖的逛会场任务')
+                if (!initForTurntableFarmRes.turntableBrowserAds[0].status) {
+                    const browserForTurntableFarmRes = yield browserForTurntableFarm(initForTurntableFarmRes.turntableBrowserAds[0].adId);
+                    if (browserForTurntableFarmRes.code === '0' && browserForTurntableFarmRes.status) {
+                        const browserForTurntableFarm2Res = yield browserForTurntableFarm2(initForTurntableFarmRes.turntableBrowserAds[0].adId);
+                        if (browserForTurntableFarm2Res.code === '0') {
+                            initForTurntableFarmRes = yield initForTurntableFarm();
+                            remainLotteryTimes = initForTurntableFarmRes.remainLotteryTimes;
+                        }
+                    }
+                } else {
+                    console.log('天天抽奖浏览任务已经做完')
+                }
             }
             //天天抽奖助力
             console.log('开始天天抽奖--好友助力--每人每天只有三次助力机会.')
@@ -463,12 +495,27 @@ function* step() {
                         isFruitFinished = true;
                         break
                     } else {
-                        if (waterResult.waterStatus === '1') {
+                        if (waterResult.waterStatus === 0 && waterResult.treeEnergy === 10) {
+                            console.log('果树发芽了,奖励30g水滴');
                             let gotStageAwardForFarmRes1 = yield gotStageAwardForFarm('1');
-                            console.log(`浇水阶段奖励1${gotStageAwardForFarmRes1}`)
-                        } else if (waterResult.waterStatus === '2') {
+                            console.log(`浇水阶段奖励1领取结果 ${JSON.stringify(gotStageAwardForFarmRes1)}`);
+                            if (gotStageAwardForFarmRes1.code === '0') {
+                                message += `【果树发芽了】奖励${gotStageAwardForFarmRes1.addEnergy}`
+                            }
+                        } else if (waterResult.waterStatus === 1) {
+                            console.log('果树开花了,奖励40g水滴');
                             let gotStageAwardForFarmRes2 = yield gotStageAwardForFarm('2');
-                            console.log(`浇水阶段奖励1${gotStageAwardForFarmRes2}`)
+                            console.log(`浇水阶段奖励2领取结果 ${JSON.stringify(gotStageAwardForFarmRes2)}`);
+                            if (gotStageAwardForFarmRes2.code === '0') {
+                                message += `【果树开花了】奖励${gotStageAwardForFarmRes2.addEnergy}g💧\n`
+                            }
+                        } else if (waterResult.waterStatus === 2) {
+                            console.log('果树长出小果子啦, 奖励50g水滴');
+                            let gotStageAwardForFarmRes3 = yield gotStageAwardForFarm('3');
+                            console.log(`浇水阶段奖励3领取结果 ${JSON.stringify(gotStageAwardForFarmRes3)}`)
+                            if (gotStageAwardForFarmRes3.code === '0') {
+                                message += `【果树结果了】奖励${gotStageAwardForFarmRes3.addEnergy}g💧\n`
+                            }
                         }
                         if (waterResult.totalEnergy < 10) {
                             console.log(`水滴不够，结束浇水`)
@@ -518,7 +565,6 @@ function* step() {
 
         farmInfo = yield initForFarm();
         // 所有的浇水(10次浇水)任务，获取水滴任务完成后，如果剩余水滴大于等于60g,则继续浇水(保留部分水滴是用于完成第二天的浇水10次的任务)
-        const retainWater = 50;//保留水滴大于50g;
         let overageEnergy = farmInfo.farmUserPro.totalEnergy - retainWater;
         if (farmInfo.farmUserPro.totalEnergy >= (farmInfo.farmUserPro.treeTotalEnergy - farmInfo.farmUserPro.treeEnergy)) {
             //如果现有的水滴，大于水果可兑换所需的对滴(也就是把水滴浇完，水果就能兑换了)
@@ -558,17 +604,27 @@ function* step() {
                         isFruitFinished = true;
                         break
                     } else {
-                        if (res.waterStatus === '1') {
+                        if (res.waterStatus === 0 && res.treeEnergy === 10) {
+                            console.log('果树发芽了,奖励30g水滴');
                             let gotStageAwardForFarmRes1 = yield gotStageAwardForFarm('1');
-                            console.log(`浇水阶段奖励1${gotStageAwardForFarmRes1}`)
-                        } else if (res.waterStatus === '2') {
+                            console.log(`浇水阶段奖励1领取结果 ${JSON.stringify(gotStageAwardForFarmRes1)}`);
+                            if (gotStageAwardForFarmRes1.code === '0') {
+                                message += `【果树发芽了】奖励${gotStageAwardForFarmRes1.addEnergy}g💧\n`
+                            }
+                        } else if (res.waterStatus === 1) {
+                            console.log('果树开花了,奖励40g水滴');
                             let gotStageAwardForFarmRes2 = yield gotStageAwardForFarm('2');
-                            console.log(`浇水阶段奖励1${gotStageAwardForFarmRes2}`)
-                        }
-                        if (res.totalEnergy < (retainWater + 10)) {
-                            console.log(`目前水滴【${res.totalEnergy}】g，不再继续浇水`)
-                        } else {
-                            console.log(`目前剩余水滴：【${res.totalEnergy}】g，可继续浇水`);
+                            console.log(`浇水阶段奖励2领取结果 ${JSON.stringify(gotStageAwardForFarmRes2)}`);
+                            if (gotStageAwardForFarmRes2.code === '0') {
+                                message += `【果树开花了】奖励${gotStageAwardForFarmRes2.addEnergy}g💧\n`
+                            }
+                        } else if (res.waterStatus === 2) {
+                            console.log('果树长出小果子啦, 奖励50g水滴');
+                            let gotStageAwardForFarmRes3 = yield gotStageAwardForFarm('3');
+                            console.log(`浇水阶段奖励3领取结果 ${JSON.stringify(gotStageAwardForFarmRes3)}`)
+                            if (gotStageAwardForFarmRes3.code === '0') {
+                                message += `【果树结果了】奖励${gotStageAwardForFarmRes3.addEnergy}g💧\n`
+                            }
                         }
                     }
                 } else {
@@ -683,7 +739,7 @@ function* step() {
     } else {
         if (farmInfo.code === '3') {
             $.msg(name, '【提示】京东cookie已失效,请重新登录获取', 'https://bean.m.jd.com/', { "open-url": "https://bean.m.jd.com/" });
-            $.setdata('', 'CookieJD_z');//cookie失效，故清空cookie。
+            $.setdata('', 'CookieJD_fruit');//cookie失效，故清空cookie。
             $.done();
             return
         } else {
@@ -735,11 +791,17 @@ function browserForTurntableFarm(type) {
     if (type === 2) {
         console.log('领取浏览爆品会场奖励');
     }
-
-    request(arguments.callee.name.toString(), { type: type });
+    const body = { "type": 1, "adId": type, "version": 4, "channel": 1 };
+    console.log('type', type + "");
+    console.log(body)
+    // request(arguments.callee.name.toString(), {type: type});
+    request(arguments.callee.name.toString(), body);
     // 浏览爆品会场8秒
 }
-
+function browserForTurntableFarm2(type) {
+    const body = { "type": 2, "adId": type, "version": 4, "channel": 1 };
+    request('browserForTurntableFarm', body);
+}
 /**
  * 领取浇水过程中的阶段性奖励
  */
@@ -877,17 +939,16 @@ function gotClockInGift() {
 
 function request(function_id, body = {}) {
     $.get(taskurl(function_id, body), (err, resp, data) => {
-        if (err) {
-            console.log("=== request error -s--");
-            console.log("=== request error -e--");
-        } else {
-            try {
+        try {
+            if (err) {
+                console.log('\n东东农场: API查询请求失败 ‼️‼️')
+            } else {
                 data = JSON.parse(data);
-            } catch (e) {
-                console.log(e);
-            } finally {
-                sleep(data);
             }
+        } catch (e) {
+            console.log(e);
+        } finally {
+            sleep(data);
         }
     })
 }
@@ -927,7 +988,7 @@ function timeFormat(time) {
     } else {
         date = new Date();
     }
-    return date.getFullYear() + '-' + ((date.getMonth() + 1) > 10 ? (date.getMonth() + 1) : '0' + (date.getMonth() + 1)) + '-' + (date.getDate() > 10 ? date.getDate() : '0' + date.getDate());
+    return date.getFullYear() + '-' + ((date.getMonth() + 1) >= 10 ? (date.getMonth() + 1) : '0' + (date.getMonth() + 1)) + '-' + (date.getDate() >= 10 ? date.getDate() : '0' + date.getDate());
 }
 // prettier-ignore
-function Env(t, s) { return new class { constructor(t, s) { this.name = t, this.data = null, this.dataFile = "box.dat", this.logs = [], this.logSeparator = "\n", this.startTime = (new Date).getTime(), Object.assign(this, s), this.log("", `\ud83d\udd14${this.name}, \u5f00\u59cb!`) } isNode() { return "undefined" != typeof module && !!module.exports } isQuanX() { return "undefined" != typeof $task } isSurge() { return "undefined" != typeof $httpClient && "undefined" == typeof $loon } isLoon() { return "undefined" != typeof $loon } getScript(t) { return new Promise(s => { $.get({ url: t }, (t, e, i) => s(i)) }) } runScript(t) { return new Promise(s => { let e = this.getdata("@chavy_boxjs_userCfgs.httpapi"); e = e ? e.replace(/\n/g, "").trim() : e; const [i, o] = e.split("@"), h = { url: `http://${o}/v1/scripting/evaluate`, body: { script_text: t, mock_type: "cron", timeout: 5 }, headers: { "X-Key": i, Accept: "*/*" } }; $.post(h, (t, e, i) => s(i)) }) } loaddata() { if (!this.isNode()) return {}; { this.fs = this.fs ? this.fs : require("fs"), this.path = this.path ? this.path : require("path"); const t = this.path.resolve(this.dataFile), s = this.path.resolve(process.cwd(), this.dataFile), e = this.fs.existsSync(t), i = !e && this.fs.existsSync(s); if (!e && !i) return {}; { const i = e ? t : s; try { return JSON.parse(this.fs.readFileSync(i)) } catch (t) { return {} } } } } writedata() { if (this.isNode()) { this.fs = this.fs ? this.fs : require("fs"), this.path = this.path ? this.path : require("path"); const t = this.path.resolve(this.dataFile), s = this.path.resolve(process.cwd(), this.dataFile), e = this.fs.existsSync(t), i = !e && this.fs.existsSync(s), o = JSON.stringify(this.data); e ? this.fs.writeFileSync(t, o) : i ? this.fs.writeFileSync(s, o) : this.fs.writeFileSync(t, o) } } lodash_get(t, s, e) { const i = s.replace(/\[(\d+)\]/g, ".$1").split("."); let o = t; for (const t of i) if (o = Object(o)[t], void 0 === o) return e; return o } lodash_set(t, s, e) { return Object(t) !== t ? t : (Array.isArray(s) || (s = s.toString().match(/[^.[\]]+/g) || []), s.slice(0, -1).reduce((t, e, i) => Object(t[e]) === t[e] ? t[e] : t[e] = Math.abs(s[i + 1]) >> 0 == +s[i + 1] ? [] : {}, t)[s[s.length - 1]] = e, t) } getdata(t) { let s = this.getval(t); if (/^@/.test(t)) { const [, e, i] = /^@(.*?)\.(.*?)$/.exec(t), o = e ? this.getval(e) : ""; if (o) try { const t = JSON.parse(o); s = t ? this.lodash_get(t, i, "") : s } catch (t) { s = "" } } return s } setdata(t, s) { let e = !1; if (/^@/.test(s)) { const [, i, o] = /^@(.*?)\.(.*?)$/.exec(s), h = this.getval(i), a = i ? "null" === h ? null : h || "{}" : "{}"; try { const s = JSON.parse(a); this.lodash_set(s, o, t), e = this.setval(JSON.stringify(s), i), console.log(`${i}: ${JSON.stringify(s)}`) } catch (s) { const h = {}; this.lodash_set(h, o, t), e = this.setval(JSON.stringify(h), i), console.log(`${i}: ${JSON.stringify(h)}`) } } else e = $.setval(t, s); return e } getval(t) { return this.isSurge() || this.isLoon() ? $persistentStore.read(t) : this.isQuanX() ? $prefs.valueForKey(t) : this.isNode() ? (this.data = this.loaddata(), this.data[t]) : this.data && this.data[t] || null } setval(t, s) { return this.isSurge() || this.isLoon() ? $persistentStore.write(t, s) : this.isQuanX() ? $prefs.setValueForKey(t, s) : this.isNode() ? (this.data = this.loaddata(), this.data[s] = t, this.writedata(), !0) : this.data && this.data[s] || null } initGotEnv(t) { this.got = this.got ? this.got : require("got"), this.cktough = this.cktough ? this.cktough : require("tough-cookie"), this.ckjar = this.ckjar ? this.ckjar : new this.cktough.CookieJar, t && (t.headers = t.headers ? t.headers : {}, void 0 === t.headers.Cookie && void 0 === t.cookieJar && (t.cookieJar = this.ckjar)) } get(t, s = (() => { })) { t.headers && (delete t.headers["Content-Type"], delete t.headers["Content-Length"]), this.isSurge() || this.isLoon() ? $httpClient.get(t, (t, e, i) => { !t && e && (e.body = i, e.statusCode = e.status, s(t, e, i)) }) : this.isQuanX() ? $task.fetch(t).then(t => { const { statusCode: e, statusCode: i, headers: o, body: h } = t; s(null, { status: e, statusCode: i, headers: o, body: h }, h) }, t => s(t)) : this.isNode() && (this.initGotEnv(t), this.got(t).on("redirect", (t, s) => { try { const e = t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString(); this.ckjar.setCookieSync(e, null), s.cookieJar = this.ckjar } catch (t) { this.logErr(t) } }).then(t => { const { statusCode: e, statusCode: i, headers: o, body: h } = t; s(null, { status: e, statusCode: i, headers: o, body: h }, h) }, t => s(t))) } post(t, s = (() => { })) { if (t.body && t.headers && !t.headers["Content-Type"] && (t.headers["Content-Type"] = "application/x-www-form-urlencoded"), delete t.headers["Content-Length"], this.isSurge() || this.isLoon()) $httpClient.post(t, (t, e, i) => { !t && e && (e.body = i, e.statusCode = e.status), s(t, e, i) }); else if (this.isQuanX()) t.method = "POST", $task.fetch(t).then(t => { const { statusCode: e, statusCode: i, headers: o, body: h } = t; s(null, { status: e, statusCode: i, headers: o, body: h }, h) }, t => s(t)); else if (this.isNode()) { this.initGotEnv(t); const { url: e, ...i } = t; this.got.post(e, i).then(t => { const { statusCode: e, statusCode: i, headers: o, body: h } = t; s(null, { status: e, statusCode: i, headers: o, body: h }, h) }, t => s(t)) } } time(t) { let s = { "M+": (new Date).getMonth() + 1, "d+": (new Date).getDate(), "H+": (new Date).getHours(), "m+": (new Date).getMinutes(), "s+": (new Date).getSeconds(), "q+": Math.floor(((new Date).getMonth() + 3) / 3), S: (new Date).getMilliseconds() }; /(y+)/.test(t) && (t = t.replace(RegExp.$1, ((new Date).getFullYear() + "").substr(4 - RegExp.$1.length))); for (let e in s) new RegExp("(" + e + ")").test(t) && (t = t.replace(RegExp.$1, 1 == RegExp.$1.length ? s[e] : ("00" + s[e]).substr(("" + s[e]).length))); return t } msg(s = t, e = "", i = "", o) { const h = t => !t || !this.isLoon() && this.isSurge() ? t : "string" == typeof t ? this.isLoon() ? t : this.isQuanX() ? { "open-url": t } : void 0 : "object" == typeof t && (t["open-url"] || t["media-url"]) ? this.isLoon() ? t["open-url"] : this.isQuanX() ? t : void 0 : void 0; this.isSurge() || this.isLoon() ? $notification.post(s, e, i, h(o)) : this.isQuanX() && $notify(s, e, i, h(o)), this.logs.push("", "==============\ud83d\udce3\u7cfb\u7edf\u901a\u77e5\ud83d\udce3=============="), this.logs.push(s), e && this.logs.push(e), i && this.logs.push(i) } log(...t) { t.length > 0 ? this.logs = [...this.logs, ...t] : console.log(this.logs.join(this.logSeparator)) } logErr(t, s) { const e = !this.isSurge() && !this.isQuanX() && !this.isLoon(); e ? $.log("", `\u2757\ufe0f${this.name}, \u9519\u8bef!`, t.stack) : $.log("", `\u2757\ufe0f${this.name}, \u9519\u8bef!`, t.message) } wait(t) { return new Promise(s => setTimeout(s, t)) } done(t = {}) { const s = (new Date).getTime(), e = (s - this.startTime) / 1e3; this.log("", `\ud83d\udd14${this.name}, \u7ed3\u675f! \ud83d\udd5b ${e} \u79d2`), this.log(), (this.isSurge() || this.isQuanX() || this.isLoon()) && $done(t) } }(t, s) }
+function Env(t, s) { return new class { constructor(t, s) { this.name = t, this.data = null, this.dataFile = "box.dat", this.logs = [], this.logSeparator = "\n", this.startTime = (new Date).getTime(), Object.assign(this, s), this.log("", `\ud83d\udd14${this.name}, \u5f00\u59cb!`) } isNode() { return "undefined" != typeof module && !!module.exports } isQuanX() { return "undefined" != typeof $task } isSurge() { return "undefined" != typeof $httpClient && "undefined" == typeof $loon } isLoon() { return "undefined" != typeof $loon } getScript(t) { return new Promise(s => { $.get({ url: t }, (t, e, i) => s(i)) }) } runScript(t, s) { return new Promise(e => { let i = this.getdata("@chavy_boxjs_userCfgs.httpapi"); i = i ? i.replace(/\n/g, "").trim() : i; let o = this.getdata("@chavy_boxjs_userCfgs.httpapi_timeout"); o = o ? 1 * o : 20, o = s && s.timeout ? s.timeout : o; const [h, a] = i.split("@"), r = { url: `http://${a}/v1/scripting/evaluate`, body: { script_text: t, mock_type: "cron", timeout: o }, headers: { "X-Key": h, Accept: "*/*" } }; $.post(r, (t, s, i) => e(i)) }).catch(t => this.logErr(t)) } loaddata() { if (!this.isNode()) return {}; { this.fs = this.fs ? this.fs : require("fs"), this.path = this.path ? this.path : require("path"); const t = this.path.resolve(this.dataFile), s = this.path.resolve(process.cwd(), this.dataFile), e = this.fs.existsSync(t), i = !e && this.fs.existsSync(s); if (!e && !i) return {}; { const i = e ? t : s; try { return JSON.parse(this.fs.readFileSync(i)) } catch (t) { return {} } } } } writedata() { if (this.isNode()) { this.fs = this.fs ? this.fs : require("fs"), this.path = this.path ? this.path : require("path"); const t = this.path.resolve(this.dataFile), s = this.path.resolve(process.cwd(), this.dataFile), e = this.fs.existsSync(t), i = !e && this.fs.existsSync(s), o = JSON.stringify(this.data); e ? this.fs.writeFileSync(t, o) : i ? this.fs.writeFileSync(s, o) : this.fs.writeFileSync(t, o) } } lodash_get(t, s, e) { const i = s.replace(/\[(\d+)\]/g, ".$1").split("."); let o = t; for (const t of i) if (o = Object(o)[t], void 0 === o) return e; return o } lodash_set(t, s, e) { return Object(t) !== t ? t : (Array.isArray(s) || (s = s.toString().match(/[^.[\]]+/g) || []), s.slice(0, -1).reduce((t, e, i) => Object(t[e]) === t[e] ? t[e] : t[e] = Math.abs(s[i + 1]) >> 0 == +s[i + 1] ? [] : {}, t)[s[s.length - 1]] = e, t) } getdata(t) { let s = this.getval(t); if (/^@/.test(t)) { const [, e, i] = /^@(.*?)\.(.*?)$/.exec(t), o = e ? this.getval(e) : ""; if (o) try { const t = JSON.parse(o); s = t ? this.lodash_get(t, i, "") : s } catch (t) { s = "" } } return s } setdata(t, s) { let e = !1; if (/^@/.test(s)) { const [, i, o] = /^@(.*?)\.(.*?)$/.exec(s), h = this.getval(i), a = i ? "null" === h ? null : h || "{}" : "{}"; try { const s = JSON.parse(a); this.lodash_set(s, o, t), e = this.setval(JSON.stringify(s), i) } catch (s) { const h = {}; this.lodash_set(h, o, t), e = this.setval(JSON.stringify(h), i) } } else e = $.setval(t, s); return e } getval(t) { return this.isSurge() || this.isLoon() ? $persistentStore.read(t) : this.isQuanX() ? $prefs.valueForKey(t) : this.isNode() ? (this.data = this.loaddata(), this.data[t]) : this.data && this.data[t] || null } setval(t, s) { return this.isSurge() || this.isLoon() ? $persistentStore.write(t, s) : this.isQuanX() ? $prefs.setValueForKey(t, s) : this.isNode() ? (this.data = this.loaddata(), this.data[s] = t, this.writedata(), !0) : this.data && this.data[s] || null } initGotEnv(t) { this.got = this.got ? this.got : require("got"), this.cktough = this.cktough ? this.cktough : require("tough-cookie"), this.ckjar = this.ckjar ? this.ckjar : new this.cktough.CookieJar, t && (t.headers = t.headers ? t.headers : {}, void 0 === t.headers.Cookie && void 0 === t.cookieJar && (t.cookieJar = this.ckjar)) } get(t, s = (() => { })) { t.headers && (delete t.headers["Content-Type"], delete t.headers["Content-Length"]), this.isSurge() || this.isLoon() ? $httpClient.get(t, (t, e, i) => { !t && e && (e.body = i, e.statusCode = e.status), s(t, e, i) }) : this.isQuanX() ? $task.fetch(t).then(t => { const { statusCode: e, statusCode: i, headers: o, body: h } = t; s(null, { status: e, statusCode: i, headers: o, body: h }, h) }, t => s(t)) : this.isNode() && (this.initGotEnv(t), this.got(t).on("redirect", (t, s) => { try { const e = t.headers["set-cookie"].map(this.cktough.Cookie.parse).toString(); this.ckjar.setCookieSync(e, null), s.cookieJar = this.ckjar } catch (t) { this.logErr(t) } }).then(t => { const { statusCode: e, statusCode: i, headers: o, body: h } = t; s(null, { status: e, statusCode: i, headers: o, body: h }, h) }, t => s(t))) } post(t, s = (() => { })) { if (t.body && t.headers && !t.headers["Content-Type"] && (t.headers["Content-Type"] = "application/x-www-form-urlencoded"), delete t.headers["Content-Length"], this.isSurge() || this.isLoon()) $httpClient.post(t, (t, e, i) => { !t && e && (e.body = i, e.statusCode = e.status), s(t, e, i) }); else if (this.isQuanX()) t.method = "POST", $task.fetch(t).then(t => { const { statusCode: e, statusCode: i, headers: o, body: h } = t; s(null, { status: e, statusCode: i, headers: o, body: h }, h) }, t => s(t)); else if (this.isNode()) { this.initGotEnv(t); const { url: e, ...i } = t; this.got.post(e, i).then(t => { const { statusCode: e, statusCode: i, headers: o, body: h } = t; s(null, { status: e, statusCode: i, headers: o, body: h }, h) }, t => s(t)) } } time(t) { let s = { "M+": (new Date).getMonth() + 1, "d+": (new Date).getDate(), "H+": (new Date).getHours(), "m+": (new Date).getMinutes(), "s+": (new Date).getSeconds(), "q+": Math.floor(((new Date).getMonth() + 3) / 3), S: (new Date).getMilliseconds() }; /(y+)/.test(t) && (t = t.replace(RegExp.$1, ((new Date).getFullYear() + "").substr(4 - RegExp.$1.length))); for (let e in s) new RegExp("(" + e + ")").test(t) && (t = t.replace(RegExp.$1, 1 == RegExp.$1.length ? s[e] : ("00" + s[e]).substr(("" + s[e]).length))); return t } msg(s = t, e = "", i = "", o) { const h = t => !t || !this.isLoon() && this.isSurge() ? t : "string" == typeof t ? this.isLoon() ? t : this.isQuanX() ? { "open-url": t } : void 0 : "object" == typeof t && (t["open-url"] || t["media-url"]) ? this.isLoon() ? t["open-url"] : this.isQuanX() ? t : void 0 : void 0; this.isSurge() || this.isLoon() ? $notification.post(s, e, i, h(o)) : this.isQuanX() && $notify(s, e, i, h(o)), this.logs.push("", "==============\ud83d\udce3\u7cfb\u7edf\u901a\u77e5\ud83d\udce3=============="), this.logs.push(s), e && this.logs.push(e), i && this.logs.push(i) } log(...t) { t.length > 0 ? this.logs = [...this.logs, ...t] : console.log(this.logs.join(this.logSeparator)) } logErr(t, s) { const e = !this.isSurge() && !this.isQuanX() && !this.isLoon(); e ? $.log("", `\u2757\ufe0f${this.name}, \u9519\u8bef!`, t.stack) : $.log("", `\u2757\ufe0f${this.name}, \u9519\u8bef!`, t) } wait(t) { return new Promise(s => setTimeout(s, t)) } done(t = {}) { const s = (new Date).getTime(), e = (s - this.startTime) / 1e3; this.log("", `\ud83d\udd14${this.name}, \u7ed3\u675f! \ud83d\udd5b ${e} \u79d2`), this.log(), (this.isSurge() || this.isQuanX() || this.isLoon()) && $done(t) } }(t, s) }

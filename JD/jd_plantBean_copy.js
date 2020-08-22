@@ -17,9 +17,9 @@ const name2 = '京东种豆得豆';
 const $ = new Env(name2);
 const Key = '';//单引号内自行填写您抓取的京东Cookie
 //直接用NobyDa的jd cookie
-const cookie = Key ? Key : $.getdata('CookieJD_z');
+const cookie = Key ? Key : $.getdata('CookieJD_plan');
 let jdNotify = $.getdata('jdPlantBeanNotify');
-let name = $.getdata('jd_plantBean_name');
+let name = $.getdata('jd_plantBean_name_z');
 
 //京东接口地址
 const JD_API_HOST = 'https://api.m.jd.com/client.action';
@@ -36,7 +36,7 @@ let awardState = '';//上期活动的京豆是否收取
 // 1️⃣脚本也可以远程挂载了。助力功能只需在box里面设置助力码。
 // 2️⃣所有脚本的cookie都可以备份，方便你迁移到其他支持box的软件。
 let isBox = false //默认没有使用box
-const boxShareCodeArr = ['jd_plantBean1', 'jd_plantBean2', 'jd_plantBean3'];
+const boxShareCodeArr = ['jd_plantBean1_z', 'jd_plantBean2_z', 'jd_plantBean3_z'];
 isBox = boxShareCodeArr.some((item) => {
     const boxShareCode = $.getdata(item);
     return (boxShareCode !== undefined && boxShareCode !== null && boxShareCode !== '');
@@ -62,7 +62,7 @@ function* step() {
         if (plantBeanIndexResult.code != "0") {
             console.log(`plantBeanIndexResult:${JSON.stringify(plantBeanIndexResult)}`)
             if (plantBeanIndexResult.code === '3') {
-                $.setdata('', 'CookieJD_z');//cookie失效，故清空cookie。
+                $.setdata('', 'CookieJD_plan');//cookie失效，故清空cookie。
                 $.msg(name, '【提示】京东cookie已失效,请重新登录获取', 'https://bean.m.jd.com/', { "open-url": "https://bean.m.jd.com/" });
                 $.done();
                 return
